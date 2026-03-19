@@ -23,7 +23,7 @@ fun main() {
  * @property score the points earned
  */
 class App {
-    var name = "Test"
+    var name = "Kill The Human"
     var score = 0
 
     fun scorePoints(points: Int) {
@@ -46,16 +46,16 @@ class App {
  * @param app the app state object
  */
 class MainWindow(val app: App) {
-    val frame = JFrame("WINDOW TITLE")
+    val frame = JFrame("Kill the Human")
     private val panel = JPanel().apply { layout = null }
-
+    private val mapPanel = JPanel()
     private val titleLabel = JLabel("APP TITLE")
 
     private val infoLabel = JLabel()
     private val clickButton = JButton("Click Me!")
     private val infoButton = JButton("Info")
 
-    private val infoWindow = InfoWindow(this, app)      // Pass app state to dialog too
+    private val mapWindow = MapWindow(this, app)      // Pass app state to dialog too
 
     init {
         setupLayout()
@@ -66,13 +66,13 @@ class MainWindow(val app: App) {
     }
 
     private fun setupLayout() {
-        panel.preferredSize = java.awt.Dimension(400, 220)
-
+        panel.preferredSize = java.awt.Dimension(720, 480)
         titleLabel.setBounds(30, 30, 340, 30)
         infoLabel.setBounds(30, 90, 340, 30)
         clickButton.setBounds(30, 150, 240, 40)
         infoButton.setBounds(300, 150, 70, 40)
 
+        panel.add(mapPanel)
         panel.add(titleLabel)
         panel.add(infoLabel)
         panel.add(clickButton)
@@ -82,9 +82,9 @@ class MainWindow(val app: App) {
     private fun setupStyles() {
         titleLabel.font = Font(Font.SANS_SERIF, Font.BOLD, 32)
         infoLabel.font = Font(Font.SANS_SERIF, Font.PLAIN, 20)
-
+        mapPanel.background = Color.RED
         clickButton.font = Font(Font.SANS_SERIF, Font.PLAIN, 20)
-        clickButton.background = Color(0xcc0055)
+        clickButton.background = Color(0xFF0055)
 
         infoButton.font = Font(Font.SANS_SERIF, Font.PLAIN, 20)
     }
@@ -108,7 +108,7 @@ class MainWindow(val app: App) {
     }
 
     private fun handleInfoClick() {
-        infoWindow.show()
+        mapWindow.show()
     }
 
     fun updateUI() {
@@ -122,7 +122,7 @@ class MainWindow(val app: App) {
             clickButton.isEnabled = true
         }
 
-        infoWindow.updateUI()       // Keep child dialog window UI up-to-date too
+        mapWindow.updateUI()       // Keep child dialog window UI up-to-date too
     }
 
     fun show() {
@@ -138,12 +138,11 @@ class MainWindow(val app: App) {
  * @param owner the parent frame, used to position and layer the dialog correctly
  * @param app the app state object
  */
-class InfoWindow(val owner: MainWindow, val app: App) {
+class MapWindow(val owner: MainWindow, val app: App) {
     private val dialog = JDialog(owner.frame, "DIALOG TITLE", false)
     private val panel = JPanel().apply { layout = null }
 
     private val infoLabel = JLabel()
-    private val resetButton = JButton("Reset")
 
     init {
         setupLayout()
@@ -157,15 +156,12 @@ class InfoWindow(val owner: MainWindow, val app: App) {
         panel.preferredSize = java.awt.Dimension(240, 180)
 
         infoLabel.setBounds(30, 30, 180, 60)
-        resetButton.setBounds(30, 120, 180, 30)
 
         panel.add(infoLabel)
-        panel.add(resetButton)
     }
 
     private fun setupStyles() {
         infoLabel.font = Font(Font.SANS_SERIF, Font.PLAIN, 16)
-        resetButton.font = Font(Font.SANS_SERIF, Font.PLAIN, 16)
     }
 
     private fun setupWindow() {
@@ -176,19 +172,11 @@ class InfoWindow(val owner: MainWindow, val app: App) {
     }
 
     private fun setupActions() {
-        resetButton.addActionListener { handleResetClick() }
-    }
-
-    private fun handleResetClick() {
-        app.resetScore()    // Update the app state
-        owner.updateUI()    // Update the UI to reflect this, via the main window
     }
 
     fun updateUI() {
         // Use app properties to display state
         infoLabel.text = "<html>User: ${app.name}<br>Score: ${app.score} points"
-
-        resetButton.isEnabled = app.score > 0
     }
 
     fun show() {
