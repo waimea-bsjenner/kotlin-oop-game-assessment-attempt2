@@ -20,25 +20,20 @@ fun main() {
  * Manage app state
  *
  * @property name the user's name
- * @property score the points earned
+ * @property timer the amount of time to complete the objective
  */
 class App {
     var name = "Kill The Human"
-    var score = 0
-
-    fun scorePoints(points: Int) {
-        score += points
-    }
-
-    fun resetScore() {
-        score = 0
-    }
-
-    fun maxScoreReached(): Boolean {
-        return score >= 10000
-    }
+    var timer = 60
 }
 
+/**
+ * Location class
+ *
+ * has different locations with different interactables player can travel to
+ */
+
+class Location(val name: String)
 
 /**
  * Main UI window, handles user clicks, etc.
@@ -48,11 +43,7 @@ class App {
 class MainWindow(val app: App) {
     val frame = JFrame("Kill the Human")
     private val panel = JPanel().apply { layout = null }
-    private val mapPanel = JPanel()
-    private val titleLabel = JLabel("APP TITLE")
 
-    private val infoLabel = JLabel()
-    private val clickButton = JButton("Click Me!")
     private val infoButton = JButton("Info")
 
     private val mapWindow = MapWindow(this, app)      // Pass app state to dialog too
@@ -63,28 +54,17 @@ class MainWindow(val app: App) {
         setupActions()
         setupWindow()
         updateUI()
+
     }
 
     private fun setupLayout() {
         panel.preferredSize = java.awt.Dimension(720, 480)
-        titleLabel.setBounds(30, 30, 340, 30)
-        infoLabel.setBounds(30, 90, 340, 30)
-        clickButton.setBounds(30, 150, 240, 40)
         infoButton.setBounds(300, 150, 70, 40)
 
-        panel.add(mapPanel)
-        panel.add(titleLabel)
-        panel.add(infoLabel)
-        panel.add(clickButton)
         panel.add(infoButton)
     }
 
     private fun setupStyles() {
-        titleLabel.font = Font(Font.SANS_SERIF, Font.BOLD, 32)
-        infoLabel.font = Font(Font.SANS_SERIF, Font.PLAIN, 20)
-        mapPanel.background = Color.RED
-        clickButton.font = Font(Font.SANS_SERIF, Font.PLAIN, 20)
-        clickButton.background = Color(0xFF0055)
 
         infoButton.font = Font(Font.SANS_SERIF, Font.PLAIN, 20)
     }
@@ -98,13 +78,7 @@ class MainWindow(val app: App) {
     }
 
     private fun setupActions() {
-        clickButton.addActionListener { handleMainClick() }
         infoButton.addActionListener { handleInfoClick() }
-    }
-
-    private fun handleMainClick() {
-        app.scorePoints(1000)       // Update the app state
-        updateUI()                  // Update this window UI to reflect this
     }
 
     private fun handleInfoClick() {
@@ -112,16 +86,6 @@ class MainWindow(val app: App) {
     }
 
     fun updateUI() {
-        infoLabel.text = "User ${app.name} has ${app.score} points"
-
-        if (app.maxScoreReached()) {
-            clickButton.text = "No More!"
-            clickButton.isEnabled = false
-        } else {
-            clickButton.text = "Click Me!"
-            clickButton.isEnabled = true
-        }
-
         mapWindow.updateUI()       // Keep child dialog window UI up-to-date too
     }
 
@@ -142,26 +106,45 @@ class MapWindow(val owner: MainWindow, val app: App) {
     private val dialog = JDialog(owner.frame, "DIALOG TITLE", false)
     private val panel = JPanel().apply { layout = null }
 
-    private val infoLabel = JLabel()
-
+    private val breakerPanel = JPanel()
+    private val officePanel = JPanel()
+    private val empty1Panel = JPanel()
+    private val empty2Panel = JPanel()
+    private val player = JPanel()
     init {
         setupLayout()
         setupStyles()
         setupActions()
         setupWindow()
         updateUI()
+        val breaker = Location("Breaker")
+        val office = Location("Office")
+        val empty1 = Location("Empty1")
+        val empty2 = Location("Empty2")
     }
 
     private fun setupLayout() {
-        panel.preferredSize = java.awt.Dimension(240, 180)
+        panel.preferredSize = java.awt.Dimension(360, 360)
 
-        infoLabel.setBounds(30, 30, 180, 60)
+        breakerPanel.setBounds(10,10, 160, 160)
+        officePanel.setBounds(190, 190, 160, 160)
+        empty1Panel.setBounds(10, 190,  160, 160)
+        empty2Panel.setBounds(190, 10, 160, 160)
+        player.setBounds(160, 160, 40, 40)
 
-        panel.add(infoLabel)
+        panel.add(player)
+        panel.add(officePanel)
+        panel.add(empty1Panel)
+        panel.add(empty2Panel)
+        panel.add(breakerPanel)
     }
 
     private fun setupStyles() {
-        infoLabel.font = Font(Font.SANS_SERIF, Font.PLAIN, 16)
+        officePanel.background = Color.RED
+        empty1Panel.background = Color.BLUE
+        empty2Panel.background = Color.YELLOW
+        breakerPanel.background = Color.GREEN
+        player.background = Color.MAGENTA
     }
 
     private fun setupWindow() {
@@ -171,12 +154,24 @@ class MapWindow(val owner: MainWindow, val app: App) {
         dialog.pack()
     }
 
-    private fun setupActions() {
+    private fun movePlayer(x: Int, y: Int) {
+        player.setLocation(x, y)
     }
 
+    private fun setupActions() {
+        breakerPanel.addMouseListener { handleBreakerClick() }
+        empty1Panel.add
+    }
+
+    private fun handleBreakerClick() {
+        movePlayer(75, 75)
+    }
+
+    private fun handleEmpty1Click() {
+        movePlayer(225, 225)
+    }
     fun updateUI() {
         // Use app properties to display state
-        infoLabel.text = "<html>User: ${app.name}<br>Score: ${app.score} points"
     }
 
     fun show() {
