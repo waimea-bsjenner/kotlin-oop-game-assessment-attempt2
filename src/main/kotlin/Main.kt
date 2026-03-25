@@ -1,6 +1,7 @@
 import com.formdev.flatlaf.themes.FlatMacDarkLaf
 import java.awt.Color
 import java.awt.Font
+import java.awt.Point
 import javax.swing.*
 
 /**
@@ -25,6 +26,23 @@ fun main() {
 class App {
     var name = "Kill The Human"
     var timer = 60
+    val locationList = mutableListOf<Location>()
+
+    init {
+        val start = Location("Start", Color.BLACK, Point(150, 150))
+        val breaker = Location("Breaker", Color.GREEN, Point(75, 75))
+        val office = Location("Office", Color.RED, Point(225, 225))
+        val empty1 = Location("Empty1", Color.BLUE, Point(75, 225))
+        val empty2 = Location("Empty2", Color.YELLOW, Point(225, 75))
+        locationList.add(breaker)
+        locationList.add(empty1)
+        locationList.add(empty2)
+        locationList.add(office)
+        locationList.add(start)
+    }
+
+
+    var currentLocation: Location = locationList[4]
 }
 
 /**
@@ -33,7 +51,11 @@ class App {
  * has different locations with different interactables player can travel to
  */
 
-class Location(val name: String)
+class Location(
+    val name: String,
+    val colour: Color,
+    val mapLocation: Point
+)
 
 /**
  * Main UI window, handles user clicks, etc.
@@ -44,8 +66,6 @@ class MainWindow(val app: App) {
     val frame = JFrame("Kill the Human")
     private val panel = JPanel().apply { layout = null }
 
-    private val infoButton = JButton("Info")
-
     private val mapWindow = MapWindow(this, app)      // Pass app state to dialog too
 
     init {
@@ -54,19 +74,15 @@ class MainWindow(val app: App) {
         setupActions()
         setupWindow()
         updateUI()
-
+        mapWindow.show()
     }
 
     private fun setupLayout() {
         panel.preferredSize = java.awt.Dimension(720, 480)
-        infoButton.setBounds(300, 150, 70, 40)
 
-        panel.add(infoButton)
     }
 
     private fun setupStyles() {
-
-        infoButton.font = Font(Font.SANS_SERIF, Font.PLAIN, 20)
     }
 
     private fun setupWindow() {
@@ -78,14 +94,12 @@ class MainWindow(val app: App) {
     }
 
     private fun setupActions() {
-        infoButton.addActionListener { handleInfoClick() }
-    }
 
-    private fun handleInfoClick() {
-        mapWindow.show()
     }
 
     fun updateUI() {
+        panel.background = app.currentLocation.colour
+
         mapWindow.updateUI()       // Keep child dialog window UI up-to-date too
     }
 
@@ -96,14 +110,14 @@ class MainWindow(val app: App) {
 
 
 /**
- * Info UI window is a child dialog and shows how the
- * app state can be shown / updated from multiple places
+ * Map window is a child dialog and shows the map
+ * of the area you play in
  *
  * @param owner the parent frame, used to position and layer the dialog correctly
  * @param app the app state object
  */
 class MapWindow(val owner: MainWindow, val app: App) {
-    private val dialog = JDialog(owner.frame, "DIALOG TITLE", false)
+    private val dialog = JDialog(owner.frame, "Map", false)
     private val panel = JPanel().apply { layout = null }
 
     private val breakerPanel = JPanel()
@@ -117,10 +131,6 @@ class MapWindow(val owner: MainWindow, val app: App) {
         setupActions()
         setupWindow()
         updateUI()
-        val breaker = Location("Breaker")
-        val office = Location("Office")
-        val empty1 = Location("Empty1")
-        val empty2 = Location("Empty2")
     }
 
     private fun setupLayout() {
@@ -159,19 +169,57 @@ class MapWindow(val owner: MainWindow, val app: App) {
     }
 
     private fun setupActions() {
-        breakerPanel.addMouseListener { handleBreakerClick() }
-        empty1Panel.add
+        breakerPanel.addMouseListener(object : java.awt.event.MouseAdapter() {
+            override fun mousePressed(e: java.awt.event.MouseEvent) {
+                handleBreakerClick()
+            }
+        })
+
+        empty1Panel.addMouseListener(object : java.awt.event.MouseAdapter() {
+            override fun mousePressed(e: java.awt.event.MouseEvent) {
+                handleEmpty1Click()
+            }
+        })
+
+        empty2Panel.addMouseListener(object : java.awt.event.MouseAdapter() {
+            override fun mousePressed(e: java.awt.event.MouseEvent) {
+                handleEmpty2Click()
+            }
+        })
+
+        officePanel.addMouseListener(object : java.awt.event.MouseAdapter() {
+            override fun mousePressed(e: java.awt.event.MouseEvent) {
+                handleOfficeClick()
+            }
+        })
     }
 
     private fun handleBreakerClick() {
-        movePlayer(75, 75)
+        app.currentLocation = app.locationList[0]
+        println(app.currentLocation.name)
+        owner.updateUI()
     }
 
     private fun handleEmpty1Click() {
-        movePlayer(225, 225)
+        app.currentLocation = app.locationList[1]
+        println(app.currentLocation.name)
+        owner.updateUI()
     }
+
+    private fun handleEmpty2Click() {
+        app.currentLocation = app.locationList[2]
+        println(app.currentLocation.name)
+        owner.updateUI()
+    }
+
+    private fun handleOfficeClick() {
+        app.currentLocation = app.locationList[3]
+        println(app.currentLocation.name)
+        owner.updateUI()
+    }
+
     fun updateUI() {
-        // Use app properties to display state
+        player.setLocation(app.currentLocation.mapLocation.x, app.currentLocation.mapLocation.y)// Use app properties to display state
     }
 
     fun show() {

@@ -18,11 +18,11 @@ Just putting my thoughts on paper... or i guess paint.net (not sponsored)
 
 ---
 
-## Date: xx/xx/20xx
+## Date: 25/03/2026
 
-Example description and notes. Example description and notes. Example description and notes. Example description and notes. Example description and notes. Example description and notes.
+I have managed to get a working map that shows player movement and stores the players location in a variable. This marks the start of something great
 
-![example.png](screenshots/example.png)
+![a simple grid of colored squares.png](screenshots/mapMovement.png)
 
 ---
 
