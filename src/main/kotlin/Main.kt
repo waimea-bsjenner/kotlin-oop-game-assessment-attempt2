@@ -1,6 +1,5 @@
 import com.formdev.flatlaf.themes.FlatMacDarkLaf
 import java.awt.Color
-import java.awt.Font
 import java.awt.Point
 import javax.swing.*
 
@@ -29,20 +28,20 @@ class App {
     val locationList = mutableListOf<Location>()
 
     init {
-        val start = Location("Start", Color.BLACK, Point(150, 150))
-        val breaker = Location("Breaker", Color.GREEN, Point(75, 75))
-        val office = Location("Office", Color.RED, Point(225, 225))
-        val empty1 = Location("Empty1", Color.BLUE, Point(75, 225))
-        val empty2 = Location("Empty2", Color.YELLOW, Point(225, 75))
+        val start = Location("Start", "images/startWindow.png", "images/startButton.png", Point(150, 150))
+        val breaker = Location("Breaker", "images/breakerWindow.png", "images/breakerButton.png", Point(75, 75))
+        val office = Location("Office", "images/officeWindow.png","images/officeButton.png",  Point(225, 225))
+        val empty1 = Location("Empty1", "images/empty1Window.png", "images/empty1Button.png", Point(75, 225))
+        val empty2 = Location("Empty2", "images/empty2Window.png", "images/empty2Button.png", Point(225, 75))
+        locationList.add(start)
         locationList.add(breaker)
         locationList.add(empty1)
         locationList.add(empty2)
         locationList.add(office)
-        locationList.add(start)
     }
 
 
-    var currentLocation: Location = locationList[4]
+    var currentLocation: Location = locationList[0]
 }
 
 /**
@@ -53,9 +52,16 @@ class App {
 
 class Location(
     val name: String,
-    val colour: Color,
+    val background: String,
+    val button: String
     val mapLocation: Point
-)
+) {
+    val backgroundImage: ImageIcon
+
+    init {
+        backgroundImage = ImageIcon(ClassLoader.getSystemResource(background))
+    }
+}
 
 /**
  * Main UI window, handles user clicks, etc.
@@ -65,7 +71,7 @@ class Location(
 class MainWindow(val app: App) {
     val frame = JFrame("Kill the Human")
     private val panel = JPanel().apply { layout = null }
-
+    private val imageLabel = JLabel(app.currentLocation.backgroundImage)
     private val mapWindow = MapWindow(this, app)      // Pass app state to dialog too
 
     init {
@@ -79,7 +85,7 @@ class MainWindow(val app: App) {
 
     private fun setupLayout() {
         panel.preferredSize = java.awt.Dimension(720, 480)
-
+        imageLabel.setBounds(0, 0, 720, 480)
     }
 
     private fun setupStyles() {
@@ -98,7 +104,7 @@ class MainWindow(val app: App) {
     }
 
     fun updateUI() {
-        panel.background = app.currentLocation.colour
+        panel.imageLabel = app.currentLocation.backgroundImage
 
         mapWindow.updateUI()       // Keep child dialog window UI up-to-date too
     }
@@ -195,25 +201,25 @@ class MapWindow(val owner: MainWindow, val app: App) {
     }
 
     private fun handleBreakerClick() {
-        app.currentLocation = app.locationList[0]
-        println(app.currentLocation.name)
-        owner.updateUI()
-    }
-
-    private fun handleEmpty1Click() {
         app.currentLocation = app.locationList[1]
         println(app.currentLocation.name)
         owner.updateUI()
     }
 
-    private fun handleEmpty2Click() {
+    private fun handleEmpty1Click() {
         app.currentLocation = app.locationList[2]
         println(app.currentLocation.name)
         owner.updateUI()
     }
 
-    private fun handleOfficeClick() {
+    private fun handleEmpty2Click() {
         app.currentLocation = app.locationList[3]
+        println(app.currentLocation.name)
+        owner.updateUI()
+    }
+
+    private fun handleOfficeClick() {
+        app.currentLocation = app.locationList[4]
         println(app.currentLocation.name)
         owner.updateUI()
     }
