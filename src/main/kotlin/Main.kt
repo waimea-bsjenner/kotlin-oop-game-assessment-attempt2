@@ -3,6 +3,9 @@ import java.awt.Color
 import java.awt.Point
 import javax.swing.*
 
+fun ImageIcon.scaled(width: Int, height: Int): ImageIcon =
+    ImageIcon(image.getScaledInstance(width, height, java.awt.Image.SCALE_SMOOTH))
+
 /**
  * Application entry point
  */
@@ -53,14 +56,10 @@ class App {
 class Location(
     val name: String,
     val background: String,
-    val button: String
+    val button: String,
     val mapLocation: Point
 ) {
-    val backgroundImage: ImageIcon
-
-    init {
-        backgroundImage = ImageIcon(ClassLoader.getSystemResource(background))
-    }
+    var backgroundImage: ImageIcon = ImageIcon(ClassLoader.getSystemResource(background))
 }
 
 /**
@@ -71,7 +70,7 @@ class Location(
 class MainWindow(val app: App) {
     val frame = JFrame("Kill the Human")
     private val panel = JPanel().apply { layout = null }
-    private val imageLabel = JLabel(app.currentLocation.backgroundImage)
+    private var imageLabel = JLabel(ImageIcon(ClassLoader.getSystemResource(app.currentLocation.background)))
     private val mapWindow = MapWindow(this, app)      // Pass app state to dialog too
 
     init {
@@ -86,9 +85,11 @@ class MainWindow(val app: App) {
     private fun setupLayout() {
         panel.preferredSize = java.awt.Dimension(720, 480)
         imageLabel.setBounds(0, 0, 720, 480)
+        panel.add(imageLabel)
     }
 
     private fun setupStyles() {
+
     }
 
     private fun setupWindow() {
@@ -104,7 +105,7 @@ class MainWindow(val app: App) {
     }
 
     fun updateUI() {
-        panel.imageLabel = app.currentLocation.backgroundImage
+        imageLabel = JLabel(ImageIcon(ClassLoader.getSystemResource(app.currentLocation.background)))
 
         mapWindow.updateUI()       // Keep child dialog window UI up-to-date too
     }
@@ -125,12 +126,17 @@ class MainWindow(val app: App) {
 class MapWindow(val owner: MainWindow, val app: App) {
     private val dialog = JDialog(owner.frame, "Map", false)
     private val panel = JPanel().apply { layout = null }
+    private val playerIcon = ImageIcon(ClassLoader.getSystemResource("images/playerCharacter.png")).scaled(40,40)
+    private val breakerIcon = ImageIcon(ClassLoader.getSystemResource(app.locationList[1].button)).scaled(160, 160)
+    private val empty1Icon = ImageIcon(ClassLoader.getSystemResource(app.locationList[2].button)).scaled(160, 160)
+    private val empty2Icon = ImageIcon(ClassLoader.getSystemResource(app.locationList[3].button)).scaled(160, 160)
+    private val officeIcon = ImageIcon(ClassLoader.getSystemResource(app.locationList[4].button)).scaled(160, 160)
 
-    private val breakerPanel = JPanel()
-    private val officePanel = JPanel()
-    private val empty1Panel = JPanel()
-    private val empty2Panel = JPanel()
-    private val player = JPanel()
+    private val breakerPanel = JLabel(breakerIcon)
+    private val officePanel = JLabel(officeIcon)
+    private val empty1Panel = JLabel(empty1Icon)
+    private val empty2Panel = JLabel(empty2Icon)
+    private val player = JLabel(playerIcon)
     init {
         setupLayout()
         setupStyles()
@@ -160,7 +166,6 @@ class MapWindow(val owner: MainWindow, val app: App) {
         empty1Panel.background = Color.BLUE
         empty2Panel.background = Color.YELLOW
         breakerPanel.background = Color.GREEN
-        player.background = Color.MAGENTA
     }
 
     private fun setupWindow() {
