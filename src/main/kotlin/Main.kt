@@ -2,6 +2,7 @@ import com.formdev.flatlaf.themes.FlatMacDarkLaf
 import java.awt.Color
 import java.awt.Point
 import javax.swing.*
+import kotlin.concurrent.timer
 
 fun ImageIcon.scaled(width: Int, height: Int): ImageIcon =
     ImageIcon(image.getScaledInstance(width, height, java.awt.Image.SCALE_SMOOTH))
@@ -26,26 +27,36 @@ fun main() {
  * @property timer the amount of time to complete the objective
  */
 class App {
-    var name = "Kill The Human"
-    var timer = 60
+    private val name = "Kill The Human"
     val locationList = mutableListOf<Location>()
+    val inventory = mutableListOf<Item>()
+
+    var currentLocation: Location = locationList[0]
 
     init {
-        val start = Location("Start", "images/startWindow.png", "images/startButton.png", Point(150, 150))
-        val breaker = Location("Breaker", "images/breakerWindow.png", "images/breakerButton.png", Point(75, 75))
-        val office = Location("Office", "images/officeWindow.png","images/officeButton.png",  Point(225, 225))
-        val empty1 = Location("Empty1", "images/empty1Window.png", "images/empty1Button.png", Point(75, 225))
-        val empty2 = Location("Empty2", "images/empty2Window.png", "images/empty2Button.png", Point(225, 75))
+        val startBackground = listOf("images/startWindow.png")
+        val breakerBackground = listOf("images/breakerWindow.png","images/breakerWindow2.png","images/breakerWindow3")
+        val officeBackground = listOf("images/officeWindow.png","images/officeWindow2.png","images/officeWindow3")
+        val empty1Background = listOf("images/empty1Window.png")
+        val supplyClosetBackground = listOf("images/supplyClosetWindow.png","images/supplyClosetWindow2.png","images/supplyClosetWindow3")
+
+        val start = Location("Start", startBackground, "images/startButton.png", Point(150, 150))
+        val breaker = Location("Breaker", breakerBackground, "images/breakerButton.png", Point(75, 75))
+        val office = Location("Office", officeBackground,"images/officeButton.png",  Point(225, 225))
+        val empty1 = Location("Empty1", empty1Background, "images/empty1Button.png", Point(75, 225))
+        val supplyCloset = Location("Supply Closet", supplyClosetBackground, "images/supplyClosetButton.png", Point(225, 75))
+
         locationList.add(start)
         locationList.add(breaker)
         locationList.add(empty1)
-        locationList.add(empty2)
+        locationList.add(supplyCloset)
         locationList.add(office)
     }
-
-
-    var currentLocation: Location = locationList[0]
 }
+
+class Item(
+    val name: String
+)
 
 /**
  * Location class
@@ -55,22 +66,23 @@ class App {
 
 class Location(
     val name: String,
-    val background: String,
+    val background: List<String>,
     val button: String,
-    val mapLocation: Point
+    val mapLocation: Point,
 ) {
-    var backgroundImage: ImageIcon = ImageIcon(ClassLoader.getSystemResource(background))
+    var backgroundImage: ImageIcon = ImageIcon(ClassLoader.getSystemResource(background[0]))
 }
+
 
 /**
  * Main UI window, handles user clicks, etc.
  *
  * @param app the app state object
  */
-class MainWindow(val app: App) {
+class MainWindow(private val app: App) {
     val frame = JFrame("Kill the Human")
     private val panel = JPanel().apply { layout = null }
-    private var imageLabel = JLabel(ImageIcon(ClassLoader.getSystemResource(app.currentLocation.background)))
+    private var imageLabel = JLabel()
     private val mapWindow = MapWindow(this, app)      // Pass app state to dialog too
 
     init {
@@ -105,7 +117,8 @@ class MainWindow(val app: App) {
     }
 
     fun updateUI() {
-        imageLabel = JLabel(ImageIcon(ClassLoader.getSystemResource(app.currentLocation.background)))
+        val backImage = ImageIcon(ClassLoader.getSystemResource(app.currentLocation.background[0]))
+        imageLabel.icon = backImage
 
         mapWindow.updateUI()       // Keep child dialog window UI up-to-date too
     }
@@ -116,6 +129,8 @@ class MainWindow(val app: App) {
 }
 
 
+//AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
+
 /**
  * Map window is a child dialog and shows the map
  * of the area you play in
@@ -123,19 +138,19 @@ class MainWindow(val app: App) {
  * @param owner the parent frame, used to position and layer the dialog correctly
  * @param app the app state object
  */
-class MapWindow(val owner: MainWindow, val app: App) {
+class MapWindow(private val owner: MainWindow, private val app: App) {
     private val dialog = JDialog(owner.frame, "Map", false)
     private val panel = JPanel().apply { layout = null }
     private val playerIcon = ImageIcon(ClassLoader.getSystemResource("images/playerCharacter.png")).scaled(40,40)
     private val breakerIcon = ImageIcon(ClassLoader.getSystemResource(app.locationList[1].button)).scaled(160, 160)
     private val empty1Icon = ImageIcon(ClassLoader.getSystemResource(app.locationList[2].button)).scaled(160, 160)
-    private val empty2Icon = ImageIcon(ClassLoader.getSystemResource(app.locationList[3].button)).scaled(160, 160)
+    private val supplyClosetIcon = ImageIcon(ClassLoader.getSystemResource(app.locationList[3].button)).scaled(160, 160)
     private val officeIcon = ImageIcon(ClassLoader.getSystemResource(app.locationList[4].button)).scaled(160, 160)
 
     private val breakerPanel = JLabel(breakerIcon)
     private val officePanel = JLabel(officeIcon)
     private val empty1Panel = JLabel(empty1Icon)
-    private val empty2Panel = JLabel(empty2Icon)
+    private val supplyClosetPanel = JLabel(supplyClosetIcon)
     private val player = JLabel(playerIcon)
     init {
         setupLayout()
@@ -151,20 +166,20 @@ class MapWindow(val owner: MainWindow, val app: App) {
         breakerPanel.setBounds(10,10, 160, 160)
         officePanel.setBounds(190, 190, 160, 160)
         empty1Panel.setBounds(10, 190,  160, 160)
-        empty2Panel.setBounds(190, 10, 160, 160)
+        supplyClosetPanel.setBounds(190, 10, 160, 160)
         player.setBounds(160, 160, 40, 40)
 
         panel.add(player)
         panel.add(officePanel)
         panel.add(empty1Panel)
-        panel.add(empty2Panel)
+        panel.add(supplyClosetPanel)
         panel.add(breakerPanel)
     }
 
     private fun setupStyles() {
         officePanel.background = Color.RED
         empty1Panel.background = Color.BLUE
-        empty2Panel.background = Color.YELLOW
+        supplyClosetPanel.background = Color.YELLOW
         breakerPanel.background = Color.GREEN
     }
 
@@ -192,9 +207,9 @@ class MapWindow(val owner: MainWindow, val app: App) {
             }
         })
 
-        empty2Panel.addMouseListener(object : java.awt.event.MouseAdapter() {
+        supplyClosetPanel.addMouseListener(object : java.awt.event.MouseAdapter() {
             override fun mousePressed(e: java.awt.event.MouseEvent) {
-                handleEmpty2Click()
+                handleSupplyClosetClick()
             }
         })
 
@@ -217,7 +232,7 @@ class MapWindow(val owner: MainWindow, val app: App) {
         owner.updateUI()
     }
 
-    private fun handleEmpty2Click() {
+    private fun handleSupplyClosetClick() {
         app.currentLocation = app.locationList[3]
         println(app.currentLocation.name)
         owner.updateUI()
