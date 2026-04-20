@@ -19,6 +19,14 @@ fun main() {
     SwingUtilities.invokeLater { window.show() }
 }
 
+class Background(
+    val image: String,
+    val x: Int = -1,
+    val y: Int = -1,
+    val w: Int = -1,
+    val h: Int = -1
+)
+
 
 /**
  * Manage app state
@@ -31,10 +39,8 @@ class App {
     val locationList = mutableListOf<Location>()
     val inventory = mutableListOf<Item>()
 
-    var currentLocation: Location = locationList[0]
-
     init {
-        val startBackground = listOf("images/startWindow.png")
+        val startBackgrounds = listOf(Background("images/startWindow.png"))
         val breakerBackground = listOf("images/breakerWindow.png","images/breakerWindow2.png","images/breakerWindow3")
         val officeBackground = listOf("images/officeWindow.png","images/officeWindow2.png","images/officeWindow3")
         val empty1Background = listOf("images/empty1Window.png")
@@ -52,6 +58,9 @@ class App {
         locationList.add(supplyCloset)
         locationList.add(office)
     }
+
+    var currentLocation: Location = locationList[0]
+
 }
 
 class Item(
@@ -66,11 +75,11 @@ class Item(
 
 class Location(
     val name: String,
-    val background: List<String>,
+    val backgroundList: List<Background>,
     val button: String,
     val mapLocation: Point,
 ) {
-    var backgroundImage: ImageIcon = ImageIcon(ClassLoader.getSystemResource(background[0]))
+    var currentBackgroundIndex: Int = 0
 }
 
 
@@ -113,12 +122,13 @@ class MainWindow(private val app: App) {
     }
 
     private fun setupActions() {
-
     }
 
     fun updateUI() {
-        val backImage = ImageIcon(ClassLoader.getSystemResource(app.currentLocation.background[0]))
-        imageLabel.icon = backImage
+        val currentLoc = app.currentLocation
+        val currentLocBack = currentLoc.backgroundList[currentLoc.currentBackgroundIndex]
+
+        imageLabel.icon = ImageIcon(ClassLoader.getSystemResource(currentLocBack.image))
 
         mapWindow.updateUI()       // Keep child dialog window UI up-to-date too
     }
