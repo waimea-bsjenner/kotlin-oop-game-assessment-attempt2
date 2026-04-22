@@ -1,6 +1,8 @@
 import com.formdev.flatlaf.themes.FlatMacDarkLaf
 import java.awt.Color
 import java.awt.Point
+import java.awt.event.MouseAdapter
+import java.awt.event.MouseEvent
 import javax.swing.*
 import kotlin.concurrent.timer
 
@@ -11,6 +13,7 @@ fun ImageIcon.scaled(width: Int, height: Int): ImageIcon =
  * Application entry point
  */
 fun main() {
+
     FlatMacDarkLaf.setup()          // Initialise the LAF
 
     val app = App()                 // Get an app state object
@@ -41,16 +44,16 @@ class App {
 
     init {
         val startBackgrounds = listOf(Background("images/startWindow.png"))
-        val breakerBackground = listOf("images/breakerWindow.png","images/breakerWindow2.png","images/breakerWindow3")
-        val officeBackground = listOf("images/officeWindow.png","images/officeWindow2.png","images/officeWindow3")
-        val empty1Background = listOf("images/empty1Window.png")
-        val supplyClosetBackground = listOf("images/supplyClosetWindow.png","images/supplyClosetWindow2.png","images/supplyClosetWindow3")
+        val breakerBackgrounds = listOf(Background("images/breakerWindow.png",240,120,240,240),Background("images/breakerWindow2.png",240,120,240,240),Background("images/breakerWindow3.png"))
+        val officeBackgrounds = listOf(Background("images/officeWindow.png"),Background("images/officeWindow2.png",330,400,60,80),Background("images/officeWindow3.png"))
+        val empty1Backgrounds = listOf(Background("images/empty1Window.png"))
+        val supplyClosetBackgrounds = listOf(Background("images/supplyClosetWindow.png",180,120,360,360),Background("images/supplyClosetWindow2.png",180,120,360,360),Background("images/supplyClosetWindow3.png"))
 
-        val start = Location("Start", startBackground, "images/startButton.png", Point(150, 150))
-        val breaker = Location("Breaker", breakerBackground, "images/breakerButton.png", Point(75, 75))
-        val office = Location("Office", officeBackground,"images/officeButton.png",  Point(225, 225))
-        val empty1 = Location("Empty1", empty1Background, "images/empty1Button.png", Point(75, 225))
-        val supplyCloset = Location("Supply Closet", supplyClosetBackground, "images/supplyClosetButton.png", Point(225, 75))
+        val start = Location("Start", startBackgrounds, "images/startButton.png", Point(150, 150))
+        val breaker = Location("Breaker", breakerBackgrounds, "images/breakerButton.png", Point(75, 75))
+        val office = Location("Office", officeBackgrounds,"images/officeButton.png",  Point(225, 225))
+        val empty1 = Location("Empty1", empty1Backgrounds, "images/empty1Button.png", Point(75, 225))
+        val supplyCloset = Location("Supply Closet", supplyClosetBackgrounds, "images/supplyClosetButton.png", Point(225, 75))
 
         locationList.add(start)
         locationList.add(breaker)
@@ -61,6 +64,19 @@ class App {
 
     var currentLocation: Location = locationList[0]
 
+    val wireCutters = Item("WireCutters")
+
+    fun nextBackground() {
+        // check via index if there in another
+        if (currentLocation == locationList[3] && currentLocation.currentBackgroundIndex == 1) {
+            inventory.add(wireCutters)
+            println("wire cutter get")
+            currentLocation.currentBackgroundIndex++
+        }
+        if (currentLocation == locationList[1] && currentLocation.currentBackgroundIndex == 1 && inventory.contains(wireCutters) {
+            inventory.removeFirst()
+        }
+    }
 }
 
 class Item(
@@ -122,13 +138,34 @@ class MainWindow(private val app: App) {
     }
 
     private fun setupActions() {
+        imageLabel.addMouseListener(object : MouseAdapter() {
+            override fun mouseClicked(e: MouseEvent) {
+                handleBackgroundClick(e.x,e.y)
+            }
+
+        })
     }
 
-    fun updateUI() {
-        val currentLoc = app.currentLocation
-        val currentLocBack = currentLoc.backgroundList[currentLoc.currentBackgroundIndex]
+    fun handleBackgroundClick(mouseX: Int, mouseY: Int) {
+        val currentLocation = app.currentLocation
+        val currentBackground = currentLocation.backgroundList[currentLocation.currentBackgroundIndex]
+        val left = currentBackground.x
+        val right = currentBackground.x + currentBackground.w
+        val top = currentBackground.y
+        val bottom = currentBackground.y + currentBackground.h
 
-        imageLabel.icon = ImageIcon(ClassLoader.getSystemResource(currentLocBack.image))
+        if (mouseX in left..right && mouseY in top..bottom) {
+            app.nextBackground()
+            updateUI()
+        }
+    }
+
+
+    fun updateUI() {
+        val currentLocation = app.currentLocation
+        val currentBackground = currentLocation.backgroundList[currentLocation.currentBackgroundIndex]
+        val helpme = ClassLoader.getSystemResource(currentBackground.image)
+        imageLabel.icon = ImageIcon(helpme)
 
         mapWindow.updateUI()       // Keep child dialog window UI up-to-date too
     }
