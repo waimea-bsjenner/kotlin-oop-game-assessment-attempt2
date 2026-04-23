@@ -40,7 +40,7 @@ class Background(
 class App {
     private val name = "Kill The Human"
     val locationList = mutableListOf<Location>()
-    val inventory = mutableListOf<Item>()
+    private val inventory = mutableListOf<Item>()
 
     init {
         val startBackgrounds = listOf(Background("images/startWindow.png"))
@@ -64,17 +64,34 @@ class App {
 
     var currentLocation: Location = locationList[0]
 
-    val wireCutters = Item("WireCutters")
+    var innerMonologue: String = "Arright, let's kill this human!"
+
+    private val wireCutters = Item("WireCutters")
 
     fun nextBackground() {
         // check via index if there in another
         if (currentLocation == locationList[3] && currentLocation.currentBackgroundIndex == 1) {
             inventory.add(wireCutters)
-            println("wire cutter get")
+            innerMonologue = "Hey look, something sharp and snippy!"
             currentLocation.currentBackgroundIndex++
         }
-        if (currentLocation == locationList[1] && currentLocation.currentBackgroundIndex == 1 && inventory.contains(wireCutters) {
+        if (currentLocation == locationList[1] && currentLocation.currentBackgroundIndex == 1 && inventory.contains(wireCutters)) {
             inventory.removeFirst()
+            innerMonologue = "Wow these things are flimsy. Broke after one snip."
+            currentLocation.currentBackgroundIndex++
+            locationList[4].currentBackgroundIndex++
+        }
+        if (currentLocation == locationList[1] && currentLocation.currentBackgroundIndex == 1 && !inventory.contains(wireCutters)) {
+            innerMonologue = "I need something sharp and snippy to cut this singular blue wire."
+        }
+        if (currentLocation == locationList[3] && currentLocation.currentBackgroundIndex == 0) {
+            currentLocation.currentBackgroundIndex++
+        }
+        if (currentLocation == locationList[1] && currentLocation.currentBackgroundIndex == 0) {
+            currentLocation.currentBackgroundIndex++
+        }
+        if (currentLocation == locationList[4] && currentLocation.currentBackgroundIndex == 1) {
+            currentLocation.currentBackgroundIndex++
         }
     }
 }
@@ -108,7 +125,8 @@ class MainWindow(private val app: App) {
     val frame = JFrame("Kill the Human")
     private val panel = JPanel().apply { layout = null }
     private var imageLabel = JLabel()
-    private val mapWindow = MapWindow(this, app)      // Pass app state to dialog too
+    private val mapWindow = MapWindow(this, app) // Pass app state to dialog too
+    private val textWindow = TextWindow(this, app)
 
     init {
         setupLayout()
@@ -117,6 +135,7 @@ class MainWindow(private val app: App) {
         setupWindow()
         updateUI()
         mapWindow.show()
+        textWindow.show()
     }
 
     private fun setupLayout() {
@@ -168,6 +187,7 @@ class MainWindow(private val app: App) {
         imageLabel.icon = ImageIcon(helpme)
 
         mapWindow.updateUI()       // Keep child dialog window UI up-to-date too
+        textWindow.updateUI()
     }
 
     fun show() {
@@ -224,10 +244,7 @@ class MapWindow(private val owner: MainWindow, private val app: App) {
     }
 
     private fun setupStyles() {
-        officePanel.background = Color.RED
-        empty1Panel.background = Color.BLUE
-        supplyClosetPanel.background = Color.YELLOW
-        breakerPanel.background = Color.GREEN
+
     }
 
     private fun setupWindow() {
@@ -242,26 +259,26 @@ class MapWindow(private val owner: MainWindow, private val app: App) {
     }
 
     private fun setupActions() {
-        breakerPanel.addMouseListener(object : java.awt.event.MouseAdapter() {
-            override fun mousePressed(e: java.awt.event.MouseEvent) {
+        breakerPanel.addMouseListener(object : MouseAdapter() {
+            override fun mousePressed(e: MouseEvent) {
                 handleBreakerClick()
             }
         })
 
-        empty1Panel.addMouseListener(object : java.awt.event.MouseAdapter() {
-            override fun mousePressed(e: java.awt.event.MouseEvent) {
+        empty1Panel.addMouseListener(object : MouseAdapter() {
+            override fun mousePressed(e: MouseEvent) {
                 handleEmpty1Click()
             }
         })
 
-        supplyClosetPanel.addMouseListener(object : java.awt.event.MouseAdapter() {
-            override fun mousePressed(e: java.awt.event.MouseEvent) {
+        supplyClosetPanel.addMouseListener(object : MouseAdapter() {
+            override fun mousePressed(e: MouseEvent) {
                 handleSupplyClosetClick()
             }
         })
 
-        officePanel.addMouseListener(object : java.awt.event.MouseAdapter() {
-            override fun mousePressed(e: java.awt.event.MouseEvent) {
+        officePanel.addMouseListener(object : MouseAdapter() {
+            override fun mousePressed(e: MouseEvent) {
                 handleOfficeClick()
             }
         })
@@ -299,9 +316,53 @@ class MapWindow(private val owner: MainWindow, private val app: App) {
         val ownerBounds = owner.frame.bounds          // get location of the main window
         dialog.setLocation(                           // Position next to main window
             ownerBounds.x + ownerBounds.width + 10,
-            ownerBounds.y
+            ownerBounds.y - 20
         )
 
         dialog.isVisible = true
+    }
+}
+/**
+ * Text window is a child dialog and shows the map
+ * of the area you play in
+ *
+ * @param owner the parent frame, used to position and layer the dialog correctly
+ * @param app the app state object
+ */
+class TextWindow(private val owner: MainWindow, private val app: App) {
+    private val panel = JPanel().apply { layout = null }
+    private val dialog = JDialog(owner.frame, "Your Inner Monologue", false)
+    private var innerMonologue = JLabel(app.innerMonologue)
+
+    private fun setupLayout() {
+        panel.preferredSize = java.awt.Dimension(360, 110)
+
+        innerMonologue.setBounds(0,0,360,90)
+    }
+
+    private fun setupWindow() {
+        dialog.isResizable = false                              // Can't resize
+        dialog.defaultCloseOperation = JDialog.HIDE_ON_CLOSE    // Hide upon window close
+        dialog.contentPane = panel                              // Main content panel
+        dialog.pack()
+    }
+
+    init {
+        setupLayout()
+        setupWindow()
+        show()
+    }
+
+    fun show() {
+        val ownerBounds = owner.frame.bounds          // get location of the main window
+        dialog.setLocation(                           // Position next to main window
+            ownerBounds.x + ownerBounds.width + 10,
+            ownerBounds.y + 390
+        )
+
+        dialog.isVisible = true
+    }
+    fun updateUI() {
+        innerMonologue.text = app.innerMonologue
     }
 }
