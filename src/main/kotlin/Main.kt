@@ -34,13 +34,14 @@ class Background(
 /**
  * Manage app state
  *
- * @property name the user's name
  * @property timer the amount of time to complete the objective
  */
 class App {
-    private val name = "Kill The Human"
     val locationList = mutableListOf<Location>()
     private val inventory = mutableListOf<Item>()
+
+    val timer = Timer(1000, null)
+    var countDown = 60
 
     init {
         val startBackgrounds = listOf(Background("images/startWindow.png"))
@@ -60,6 +61,8 @@ class App {
         locationList.add(empty1)
         locationList.add(supplyCloset)
         locationList.add(office)
+
+        setupActions()
     }
 
     var currentLocation: Location = locationList[0]
@@ -69,7 +72,6 @@ class App {
     private val wireCutters = Item("WireCutters")
 
     fun nextBackground() {
-        // check via index if there in another
         if (currentLocation == locationList[3] && currentLocation.currentBackgroundIndex == 1) {
             inventory.add(wireCutters)
             innerMonologue = "Hey look, something sharp and snippy!"
@@ -94,6 +96,20 @@ class App {
             currentLocation.currentBackgroundIndex++
         }
     }
+
+    private fun setupActions() {
+        timer.addActionListener { handleTimerEnd() }
+    }
+
+    private fun handleTimerEnd() {
+        countDown--
+        if (countDown == 0)
+            loseGame()
+    }
+
+    private fun loseGame() {
+
+    }
 }
 
 class Item(
@@ -103,7 +119,7 @@ class Item(
 /**
  * Location class
  *
- * has different locations with different interactables player can travel to
+ * has different locations with different interactive things player can travel to
  */
 
 class Location(
@@ -125,6 +141,7 @@ class MainWindow(private val app: App) {
     val frame = JFrame("Kill the Human")
     private val panel = JPanel().apply { layout = null }
     private var imageLabel = JLabel()
+    private var countDown = JLabel("${app.countDown}")
     private val mapWindow = MapWindow(this, app) // Pass app state to dialog too
     private val textWindow = TextWindow(this, app)
 
@@ -136,12 +153,17 @@ class MainWindow(private val app: App) {
         updateUI()
         mapWindow.show()
         textWindow.show()
+        app.timer.start()
     }
 
     private fun setupLayout() {
         panel.preferredSize = java.awt.Dimension(720, 480)
+
         imageLabel.setBounds(0, 0, 720, 480)
+        countDown.setBounds(10,10,50,50)
+
         panel.add(imageLabel)
+        panel.add(countDown)
     }
 
     private fun setupStyles() {
@@ -185,6 +207,8 @@ class MainWindow(private val app: App) {
         val currentBackground = currentLocation.backgroundList[currentLocation.currentBackgroundIndex]
         val helpme = ClassLoader.getSystemResource(currentBackground.image)
         imageLabel.icon = ImageIcon(helpme)
+
+        countDown.text = "${app.countDown}"
 
         mapWindow.updateUI()       // Keep child dialog window UI up-to-date too
         textWindow.updateUI()
@@ -244,7 +268,7 @@ class MapWindow(private val owner: MainWindow, private val app: App) {
     }
 
     private fun setupStyles() {
-
+        panel.background = Color.BLACK
     }
 
     private fun setupWindow() {
@@ -252,10 +276,6 @@ class MapWindow(private val owner: MainWindow, private val app: App) {
         dialog.defaultCloseOperation = JDialog.HIDE_ON_CLOSE    // Hide upon window close
         dialog.contentPane = panel                              // Main content panel
         dialog.pack()
-    }
-
-    private fun movePlayer(x: Int, y: Int) {
-        player.setLocation(x, y)
     }
 
     private fun setupActions() {
@@ -322,9 +342,12 @@ class MapWindow(private val owner: MainWindow, private val app: App) {
         dialog.isVisible = true
     }
 }
+
+//AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
+
 /**
- * Text window is a child dialog and shows the map
- * of the area you play in
+ * Text window is a child dialog and shows basic clues
+ * and gives hints
  *
  * @param owner the parent frame, used to position and layer the dialog correctly
  * @param app the app state object
@@ -332,12 +355,14 @@ class MapWindow(private val owner: MainWindow, private val app: App) {
 class TextWindow(private val owner: MainWindow, private val app: App) {
     private val panel = JPanel().apply { layout = null }
     private val dialog = JDialog(owner.frame, "Your Inner Monologue", false)
-    private var innerMonologue = JLabel(app.innerMonologue)
+    private var innerMonologue = JLabel("<html><center>${app.innerMonologue}")
 
     private fun setupLayout() {
         panel.preferredSize = java.awt.Dimension(360, 110)
 
-        innerMonologue.setBounds(0,0,360,90)
+        innerMonologue.setBounds(10,0,360,90)
+
+        panel.add(innerMonologue)
     }
 
     private fun setupWindow() {
