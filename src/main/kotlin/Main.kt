@@ -20,6 +20,8 @@ fun main() {
     val window = MainWindow(app)    // Spawn the UI, passing in the app state
 
     SwingUtilities.invokeLater { window.show() }
+
+
 }
 
 class Background(
@@ -46,7 +48,7 @@ class App {
     init {
         val startBackgrounds = listOf(Background("images/startWindow.png"))
         val breakerBackgrounds = listOf(Background("images/breakerWindow.png",240,120,240,240),Background("images/breakerWindow2.png",240,120,240,240),Background("images/breakerWindow3.png"))
-        val officeBackgrounds = listOf(Background("images/officeWindow.png"),Background("images/officeWindow2.png",330,400,60,80),Background("images/officeWindow3.png"))
+        val officeBackgrounds = listOf(Background("images/officeWindow.png"),Background("images/officeWindow2.png",300,240,120,240),Background("images/officeWindow3.png"),Background("images/winScreen.png"))
         val empty1Backgrounds = listOf(Background("images/empty1Window.png"))
         val supplyClosetBackgrounds = listOf(Background("images/supplyClosetWindow.png",180,120,360,360),Background("images/supplyClosetWindow2.png",180,120,360,360),Background("images/supplyClosetWindow3.png"))
 
@@ -94,6 +96,7 @@ class App {
         }
         if (currentLocation == locationList[4] && currentLocation.currentBackgroundIndex == 1) {
             currentLocation.currentBackgroundIndex++
+            timer.stop()
         }
     }
 
@@ -103,6 +106,7 @@ class App {
 
     private fun handleTimerEnd() {
         countDown--
+        println(countDown)
         if (countDown == 0)
             loseGame()
     }
@@ -209,6 +213,11 @@ class MainWindow(private val app: App) {
         imageLabel.icon = ImageIcon(helpme)
 
         countDown.text = "${app.countDown}"
+        if (app.currentLocation == app.locationList[4] && app.currentLocation.currentBackgroundIndex == 2) {
+            Thread.sleep(1000L)
+            app.currentLocation.currentBackgroundIndex++
+            updateUI()
+        }
 
         mapWindow.updateUI()       // Keep child dialog window UI up-to-date too
         textWindow.updateUI()
@@ -306,25 +315,21 @@ class MapWindow(private val owner: MainWindow, private val app: App) {
 
     private fun handleBreakerClick() {
         app.currentLocation = app.locationList[1]
-        println(app.currentLocation.name)
         owner.updateUI()
     }
 
     private fun handleEmpty1Click() {
         app.currentLocation = app.locationList[2]
-        println(app.currentLocation.name)
         owner.updateUI()
     }
 
     private fun handleSupplyClosetClick() {
         app.currentLocation = app.locationList[3]
-        println(app.currentLocation.name)
         owner.updateUI()
     }
 
     private fun handleOfficeClick() {
         app.currentLocation = app.locationList[4]
-        println(app.currentLocation.name)
         owner.updateUI()
     }
 
