@@ -1,5 +1,6 @@
 import com.formdev.flatlaf.themes.FlatMacDarkLaf
 import java.awt.Color
+import java.awt.Font
 import java.awt.Point
 import java.awt.event.MouseAdapter
 import java.awt.event.MouseEvent
@@ -42,27 +43,27 @@ class App {
     val locationList = mutableListOf<Location>()
     private val inventory = mutableListOf<Item>()
 
-    val timer = Timer(1000, null)
-    var countDown = 60
-
     init {
         val startBackgrounds = listOf(Background("images/startWindow.png"))
         val breakerBackgrounds = listOf(Background("images/breakerWindow.png",240,120,240,240),Background("images/breakerWindow2.png",240,120,240,240),Background("images/breakerWindow3.png"))
-        val officeBackgrounds = listOf(Background("images/officeWindow.png"),Background("images/officeWindow2.png",300,240,120,240),Background("images/officeWindow3.png"),Background("images/winScreen.png"))
+        val officeBackgrounds = listOf(Background("images/officeWindow.png"),Background("images/officeWindow2.png",300,240,120,240),Background("images/officeWindow3.png"))
         val empty1Backgrounds = listOf(Background("images/empty1Window.png"))
         val supplyClosetBackgrounds = listOf(Background("images/supplyClosetWindow.png",180,120,360,360),Background("images/supplyClosetWindow2.png",180,120,360,360),Background("images/supplyClosetWindow3.png"))
+        val loseScreenBackgrounds = listOf(Background("images/loseWindow.png"))
 
         val start = Location("Start", startBackgrounds, "images/startButton.png", Point(150, 150))
         val breaker = Location("Breaker", breakerBackgrounds, "images/breakerButton.png", Point(75, 75))
         val office = Location("Office", officeBackgrounds,"images/officeButton.png",  Point(225, 225))
         val empty1 = Location("Empty1", empty1Backgrounds, "images/empty1Button.png", Point(75, 225))
         val supplyCloset = Location("Supply Closet", supplyClosetBackgrounds, "images/supplyClosetButton.png", Point(225, 75))
+        val loseScreen = Location("Lose Screen", loseScreenBackgrounds, "images/startButton.png", Point(150, 150))
 
         locationList.add(start)
         locationList.add(breaker)
         locationList.add(empty1)
         locationList.add(supplyCloset)
         locationList.add(office)
+        locationList.add(loseScreen)
 
         setupActions()
     }
@@ -96,23 +97,10 @@ class App {
         }
         if (currentLocation == locationList[4] && currentLocation.currentBackgroundIndex == 1) {
             currentLocation.currentBackgroundIndex++
-            timer.stop()
         }
     }
 
     private fun setupActions() {
-        timer.addActionListener { handleTimerEnd() }
-    }
-
-    private fun handleTimerEnd() {
-        countDown--
-        println(countDown)
-        if (countDown == 0)
-            loseGame()
-    }
-
-    private fun loseGame() {
-
     }
 }
 
@@ -141,11 +129,14 @@ class Location(
  *
  * @param app the app state object
  */
-class MainWindow(private val app: App) {
+class MainWindow(val app: App) {
     val frame = JFrame("Kill the Human")
-    private val panel = JPanel().apply { layout = null }
+
+    private val timer = Timer(1000,null)
+    private var countDown = 5
+    private val panel = JLayeredPane().apply { layout = null }
     private var imageLabel = JLabel()
-    private var countDown = JLabel("${app.countDown}")
+    private var countDownLabel = JLabel("$countDown")
     private val mapWindow = MapWindow(this, app) // Pass app state to dialog too
     private val textWindow = TextWindow(this, app)
 
@@ -157,21 +148,22 @@ class MainWindow(private val app: App) {
         updateUI()
         mapWindow.show()
         textWindow.show()
-        app.timer.start()
+        timer.start()
     }
 
     private fun setupLayout() {
         panel.preferredSize = java.awt.Dimension(720, 480)
 
         imageLabel.setBounds(0, 0, 720, 480)
-        countDown.setBounds(10,10,50,50)
+        countDownLabel.setBounds(10,10,100,100)
 
         panel.add(imageLabel)
-        panel.add(countDown)
+        panel.add(countDownLabel)
+        panel.setLayer(countDownLabel, JLayeredPane.DEFAULT_LAYER+1)
     }
 
     private fun setupStyles() {
-
+        countDownLabel.font = Font("Arial", Font.PLAIN, 50)
     }
 
     private fun setupWindow() {
@@ -189,6 +181,18 @@ class MainWindow(private val app: App) {
             }
 
         })
+
+        timer.addActionListener { handleTimerEnd() }
+    }
+
+    private fun handleTimerEnd() {
+        countDown--
+        updateUI()
+        if (countDown == 0) {
+            imageLabel.icon = ImageIcon(ClassLoader.getSystemResource("images/loseScreen.png"))
+            timer.stop()
+            mapWindow.die()
+        }
     }
 
     fun handleBackgroundClick(mouseX: Int, mouseY: Int) {
@@ -212,12 +216,7 @@ class MainWindow(private val app: App) {
         val helpme = ClassLoader.getSystemResource(currentBackground.image)
         imageLabel.icon = ImageIcon(helpme)
 
-        countDown.text = "${app.countDown}"
-        if (app.currentLocation == app.locationList[4] && app.currentLocation.currentBackgroundIndex == 2) {
-            Thread.sleep(1000L)
-            app.currentLocation.currentBackgroundIndex++
-            updateUI()
-        }
+        countDownLabel.text = "$countDown"
 
         mapWindow.updateUI()       // Keep child dialog window UI up-to-date too
         textWindow.updateUI()
@@ -345,6 +344,11 @@ class MapWindow(private val owner: MainWindow, private val app: App) {
         )
 
         dialog.isVisible = true
+    }
+
+    fun die() {
+        panel.isVisible = false
+        owner.app.innerMonologue = "Dang it! We couldn't kill them!"
     }
 }
 
