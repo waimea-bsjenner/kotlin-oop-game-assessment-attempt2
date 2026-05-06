@@ -7,6 +7,11 @@ import java.awt.event.MouseEvent
 import javax.swing.*
 import kotlin.concurrent.timer
 
+/**
+ * Scaling function
+ *
+ * scales an image to properly fit its container
+ */
 fun ImageIcon.scaled(width: Int, height: Int): ImageIcon =
     ImageIcon(image.getScaledInstance(width, height, java.awt.Image.SCALE_SMOOTH))
 
@@ -25,6 +30,11 @@ fun main() {
 
 }
 
+/**
+ * Background class
+ *
+ * purely informational, stores the location and any clickables, if none then defaults to an unclickable area
+ */
 class Background(
     val image: String,
     val x: Int = -1,
@@ -64,8 +74,6 @@ class App {
         locationList.add(supplyCloset)
         locationList.add(office)
         locationList.add(loseScreen)
-
-        setupActions()
     }
 
     var currentLocation: Location = locationList[0]
@@ -74,6 +82,9 @@ class App {
 
     private val wireCutters = Item("WireCutters")
 
+    /**
+     * nextBackground function changes the background depending on how the player interacts with it
+     */
     fun nextBackground() {
         if (currentLocation == locationList[3] && currentLocation.currentBackgroundIndex == 1) {
             inventory.add(wireCutters)
@@ -99,11 +110,13 @@ class App {
             currentLocation.currentBackgroundIndex++
         }
     }
-
-    private fun setupActions() {
-    }
 }
 
+/**
+ * Item class
+ *
+ * a simple class used to hold 'keys' to progress through the game
+ */
 class Item(
     val name: String
 )
@@ -113,7 +126,6 @@ class Item(
  *
  * has different locations with different interactive things player can travel to
  */
-
 class Location(
     val name: String,
     val backgroundList: List<Background>,
@@ -134,9 +146,11 @@ class MainWindow(val app: App) {
 
     private val timer = Timer(1000,null)
     private var countDown = 60
+
     private val panel = JLayeredPane().apply { layout = null }
     private var imageLabel = JLabel()
     private var countDownLabel = JLabel("$countDown")
+
     private val mapWindow = MapWindow(this, app) // Pass app state to dialog too
     private val textWindow = TextWindow(this, app)
 
@@ -185,6 +199,9 @@ class MainWindow(val app: App) {
         timer.addActionListener { handleTimerEnd() }
     }
 
+    /**
+     * ticks the countdown along whenever the timer ends, or every second. lose game is countdown hits 0
+     */
     private fun handleTimerEnd() {
         countDown--
         updateUI()
@@ -195,6 +212,9 @@ class MainWindow(val app: App) {
         }
     }
 
+    /**
+     * checks if a mouse click is in a set interactable area
+     */
     fun handleBackgroundClick(mouseX: Int, mouseY: Int) {
         val currentLocation = app.currentLocation
         val currentBackground = currentLocation.backgroundList[currentLocation.currentBackgroundIndex]
@@ -209,7 +229,9 @@ class MainWindow(val app: App) {
         }
     }
 
-
+    /**
+     * updates the UI whenever an input is made, or the countdown goes down
+     */
     fun updateUI() {
         val currentLocation = app.currentLocation
         val currentBackground = currentLocation.backgroundList[currentLocation.currentBackgroundIndex]
@@ -226,6 +248,9 @@ class MainWindow(val app: App) {
         textWindow.updateUI()
     }
 
+    /**
+     * shows the frame
+     */
     fun show() {
         frame.isVisible = true
     }
@@ -316,6 +341,9 @@ class MapWindow(private val owner: MainWindow, private val app: App) {
         })
     }
 
+    /**
+     * the next 4 functions run when their respective panels are clicked, and change your location
+     */
     private fun handleBreakerClick() {
         app.currentLocation = app.locationList[1]
         owner.updateUI()
@@ -336,10 +364,16 @@ class MapWindow(private val owner: MainWindow, private val app: App) {
         owner.updateUI()
     }
 
+    /**
+     * updates the window to move the player to its respective location panel
+     */
     fun updateUI() {
         player.setLocation(app.currentLocation.mapLocation.x, app.currentLocation.mapLocation.y)// Use app properties to display state
     }
 
+    /**
+     * spawns in the window, offset from the main window
+     */
     fun show() {
         val ownerBounds = owner.frame.bounds          // get location of the main window
         dialog.setLocation(                           // Position next to main window
@@ -350,6 +384,9 @@ class MapWindow(private val owner: MainWindow, private val app: App) {
         dialog.isVisible = true
     }
 
+    /**
+     * closes the window to prevent movement when game is lost
+     */
     fun die() {
         panel.isVisible = false
         owner.app.innerMonologue = "Dang it! We couldn't kill them!"
@@ -391,6 +428,9 @@ class TextWindow(private val owner: MainWindow, private val app: App) {
         show()
     }
 
+    /**
+     * spawns in the window, offset from the main window
+     */
     fun show() {
         val ownerBounds = owner.frame.bounds          // get location of the main window
         dialog.setLocation(                           // Position next to main window
@@ -400,6 +440,10 @@ class TextWindow(private val owner: MainWindow, private val app: App) {
 
         dialog.isVisible = true
     }
+
+    /**
+     * changes the text
+     */
     fun updateUI() {
         innerMonologue.text = app.innerMonologue
     }
