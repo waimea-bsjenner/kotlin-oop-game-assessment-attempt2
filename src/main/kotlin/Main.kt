@@ -133,7 +133,7 @@ class MainWindow(val app: App) {
     val frame = JFrame("Kill the Human")
 
     private val timer = Timer(1000,null)
-    private var countDown = 5
+    private var countDown = 60
     private val panel = JLayeredPane().apply { layout = null }
     private var imageLabel = JLabel()
     private var countDownLabel = JLabel("$countDown")
@@ -217,6 +217,10 @@ class MainWindow(val app: App) {
         imageLabel.icon = ImageIcon(helpme)
 
         countDownLabel.text = "$countDown"
+
+        if (app.currentLocation == app.locationList[4] && app.currentLocation.currentBackgroundIndex == 2) {
+            timer.stop()
+        }
 
         mapWindow.updateUI()       // Keep child dialog window UI up-to-date too
         textWindow.updateUI()
