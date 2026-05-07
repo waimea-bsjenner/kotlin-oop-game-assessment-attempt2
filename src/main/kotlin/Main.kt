@@ -54,6 +54,7 @@ class App {
     private val inventory = mutableListOf<Item>()
 
     init {
+        val keyBoardBackgrounds = listOf(Background("images/keyBoardWindow.png"))
         val startBackgrounds = listOf(Background("images/startWindow.png"))
         val breakerBackgrounds = listOf(Background("images/breakerWindow.png",240,120,240,240),Background("images/breakerWindow2.png",240,120,240,240),Background("images/breakerWindow3.png"))
         val officeBackgrounds = listOf(Background("images/officeWindow.png"),Background("images/officeWindow2.png",300,240,120,240),Background("images/officeWindow3.png"))
@@ -61,9 +62,10 @@ class App {
         val supplyClosetBackgrounds = listOf(Background("images/supplyClosetWindow.png",180,120,360,360),Background("images/supplyClosetWindow2.png",180,120,360,360),Background("images/supplyClosetWindow3.png"))
         val loseScreenBackgrounds = listOf(Background("images/loseWindow.png"))
 
+        val keyBoard = Location("keyBoard", keyBoardBackgrounds, "images/keyBoardButton.png", Point(10,10))
         val start = Location("Start", startBackgrounds, "images/startButton.png", Point(150, 150))
         val breaker = Location("Breaker", breakerBackgrounds, "images/breakerButton.png", Point(75, 75))
-        val office = Location("Office", officeBackgrounds,"images/officeButton.png",  Point(225, 225))
+        val office = Location("Office", officeBackgrounds,"images/officeButton.png",  Point(50, 286))
         val empty1 = Location("Empty1", empty1Backgrounds, "images/empty1Button.png", Point(75, 225))
         val supplyCloset = Location("Supply Closet", supplyClosetBackgrounds, "images/supplyClosetButton.png", Point(225, 75))
         val loseScreen = Location("Lose Screen", loseScreenBackgrounds, "images/startButton.png", Point(150, 150))
@@ -74,13 +76,15 @@ class App {
         locationList.add(supplyCloset)
         locationList.add(office)
         locationList.add(loseScreen)
+        locationList.add(keyBoard)
     }
 
     var currentLocation: Location = locationList[0]
 
     var innerMonologue: String = "Arright, let's kill this human!" // the text that gives basic hints and clues
 
-    private val wireCutters = Item("WireCutters")
+    private val wireCutters = Item("Wire Cutters")
+    private val supplyKey = Item("Supply Closet Key")
 
     /**
      * nextBackground function changes the background depending on how the player interacts with it
@@ -92,22 +96,31 @@ class App {
             currentLocation.currentBackgroundIndex++
         }
         if (currentLocation == locationList[1] && currentLocation.currentBackgroundIndex == 1 && inventory.contains(wireCutters)) {
-            inventory.removeFirst()
-            innerMonologue = "Wow these things are flimsy. Broke after one snip."
+            inventory.remove(wireCutters)
+            innerMonologue = "Wow these wire cutters are flimsy. Broke after one snip."
             currentLocation.currentBackgroundIndex++
             locationList[4].currentBackgroundIndex++
         }
         if (currentLocation == locationList[1] && currentLocation.currentBackgroundIndex == 1 && !inventory.contains(wireCutters)) {
             innerMonologue = "I need something sharp and snippy to cut this singular blue wire."
         }
-        if (currentLocation == locationList[3] && currentLocation.currentBackgroundIndex == 0) {
+        if (currentLocation == locationList[3] && currentLocation.currentBackgroundIndex == 0 && inventory.contains(supplyKey)) {
             currentLocation.currentBackgroundIndex++
+            innerMonologue = "So this is the supply closet this thing goes into"
+        }
+        if (currentLocation == locationList[3] && currentLocation.currentBackgroundIndex == 0 && !inventory.contains(supplyKey)) {
+            innerMonologue = "I think i need a generic supply closet key"
         }
         if (currentLocation == locationList[1] && currentLocation.currentBackgroundIndex == 0) {
             currentLocation.currentBackgroundIndex++
         }
         if (currentLocation == locationList[4] && currentLocation.currentBackgroundIndex == 1) {
             currentLocation.currentBackgroundIndex++
+        }
+        if (currentLocation == locationList[6] && currentLocation.currentBackgroundIndex == 0) {
+            currentLocation.currentBackgroundIndex++
+            inventory.add(supplyKey)
+            innerMonologue = "A lone key... I wonder which supply closet this thing goes into"
         }
     }
 }
@@ -284,17 +297,21 @@ class MainWindow(val app: App) {
 class MapWindow(private val owner: MainWindow, private val app: App) {
     private val dialog = JDialog(owner.frame, "Map", false)
     private val panel = JPanel().apply { layout = null }
+    private val map = ImageIcon(ClassLoader.getSystemResource("images/map.png"))
     private val playerIcon = ImageIcon(ClassLoader.getSystemResource("images/playerCharacter.png")).scaled(40,40)
-    private val breakerIcon = ImageIcon(ClassLoader.getSystemResource(app.locationList[1].button)).scaled(160, 160)
-    private val empty1Icon = ImageIcon(ClassLoader.getSystemResource(app.locationList[2].button)).scaled(160, 160)
-    private val supplyClosetIcon = ImageIcon(ClassLoader.getSystemResource(app.locationList[3].button)).scaled(160, 160)
-    private val officeIcon = ImageIcon(ClassLoader.getSystemResource(app.locationList[4].button)).scaled(160, 160)
+    private val breakerIcon = ImageIcon(ClassLoader.getSystemResource(app.locationList[1].button)).scaled(72, 48)
+    private val empty1Icon = ImageIcon(ClassLoader.getSystemResource(app.locationList[2].button)).scaled(72, 48)
+    private val supplyClosetIcon = ImageIcon(ClassLoader.getSystemResource(app.locationList[3].button)).scaled(72, 48)
+    private val officeIcon = ImageIcon(ClassLoader.getSystemResource(app.locationList[4].button)).scaled(72, 48)
+    private val keyBoardIcon = ImageIcon(ClassLoader.getSystemResource(app.locationList[6].button)).scaled(72,48)
 
+    private val mapPanel = JLabel(map)
     private val breakerPanel = JLabel(breakerIcon)
     private val officePanel = JLabel(officeIcon)
     private val empty1Panel = JLabel(empty1Icon)
     private val supplyClosetPanel = JLabel(supplyClosetIcon)
     private val player = JLabel(playerIcon)
+    private val keyBoardPanel = JLabel(keyBoardIcon)
     init {
         setupLayout()
         setupStyles()
@@ -306,21 +323,26 @@ class MapWindow(private val owner: MainWindow, private val app: App) {
     private fun setupLayout() {
         panel.preferredSize = java.awt.Dimension(360, 360)
 
-        breakerPanel.setBounds(10,10, 160, 160)
-        officePanel.setBounds(190, 190, 160, 160)
-        empty1Panel.setBounds(10, 190,  160, 160)
-        supplyClosetPanel.setBounds(190, 10, 160, 160)
+        mapPanel.setBounds(0,0,360,360)
+        breakerPanel.setBounds(10,10, 108, 72)
+        officePanel.setBounds(190, 190, 108, 72)
+        empty1Panel.setBounds(10, 190,  108, 72)
+        supplyClosetPanel.setBounds(190, 10, 108, 72)
+        keyBoardPanel.setBounds(252,288,108,72)
+
         player.setBounds(160, 160, 40, 40)
+
 
         panel.add(player)
         panel.add(officePanel)
         panel.add(empty1Panel)
         panel.add(supplyClosetPanel)
         panel.add(breakerPanel)
+        panel.add(keyBoardPanel)
+        panel.add(mapPanel, JLayeredPane.DEFAULT_LAYER-1)
     }
 
     private fun setupStyles() {
-        panel.background = Color.BLACK
     }
 
     private fun setupWindow() {
@@ -357,6 +379,12 @@ class MapWindow(private val owner: MainWindow, private val app: App) {
                 handleOfficeClick()
             }
         })
+
+        keyBoardPanel.addMouseListener(object : MouseAdapter() {
+            override fun mousePressed(e: MouseEvent) {
+                handleKeyBoardClick()
+            }
+        })
     }
 
     /**
@@ -379,6 +407,11 @@ class MapWindow(private val owner: MainWindow, private val app: App) {
 
     private fun handleOfficeClick() {
         app.currentLocation = app.locationList[4]
+        owner.updateUI()
+    }
+
+    private fun handleKeyBoardClick() {
+        app.currentLocation = app.locationList[6]
         owner.updateUI()
     }
 
