@@ -144,6 +144,7 @@ class Location(
 class MainWindow(val app: App) {
     val frame = JFrame("Kill the Human")
 
+    // variables for time pressure aspect of game
     private val timer = Timer(1000,null)
     private var countDown = 60
 
@@ -151,6 +152,7 @@ class MainWindow(val app: App) {
     private var imageLabel = JLabel()
     private var countDownLabel = JLabel("$countDown")
 
+    // other windows
     private val mapWindow = MapWindow(this, app) // Pass app state to dialog too
     private val textWindow = TextWindow(this, app)
 
@@ -165,6 +167,9 @@ class MainWindow(val app: App) {
         timer.start()
     }
 
+    /**
+     * sets up the main window
+     */
     private fun setupLayout() {
         panel.preferredSize = java.awt.Dimension(720, 480)
 
@@ -176,6 +181,9 @@ class MainWindow(val app: App) {
         panel.setLayer(countDownLabel, JLayeredPane.DEFAULT_LAYER+1)
     }
 
+    /**
+     * 
+     */
     private fun setupStyles() {
         countDownLabel.font = Font("Arial", Font.PLAIN, 50)
     }
