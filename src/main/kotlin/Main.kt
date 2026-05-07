@@ -78,7 +78,7 @@ class App {
 
     var currentLocation: Location = locationList[0]
 
-    var innerMonologue: String = "Arright, let's kill this human!"
+    var innerMonologue: String = "Arright, let's kill this human!" // the text that gives basic hints and clues
 
     private val wireCutters = Item("WireCutters")
 
@@ -132,7 +132,7 @@ class Location(
     val button: String,
     val mapLocation: Point,
 ) {
-    var currentBackgroundIndex: Int = 0
+    var currentBackgroundIndex: Int = 0 // Each location has different backgrounds, and this keeps track of which one to show
 }
 
 
@@ -182,12 +182,15 @@ class MainWindow(val app: App) {
     }
 
     /**
-     * 
+     * sets up the styles
      */
     private fun setupStyles() {
         countDownLabel.font = Font("Arial", Font.PLAIN, 50)
     }
 
+    /**
+     * sets up the window
+     */
     private fun setupWindow() {
         frame.isResizable = false                           // Can't resize
         frame.defaultCloseOperation = JFrame.EXIT_ON_CLOSE  // Exit upon window close
@@ -196,7 +199,11 @@ class MainWindow(val app: App) {
         frame.setLocationRelativeTo(null)                   // Centre on the screen
     }
 
+    /**
+     * sets up the actions
+     */
     private fun setupActions() {
+        // This checks to see where the mouse is clicking
         imageLabel.addMouseListener(object : MouseAdapter() {
             override fun mouseClicked(e: MouseEvent) {
                 handleBackgroundClick(e.x,e.y)
@@ -216,7 +223,7 @@ class MainWindow(val app: App) {
         if (countDown == 0) {
             imageLabel.icon = ImageIcon(ClassLoader.getSystemResource("images/loseScreen.png"))
             timer.stop()
-            mapWindow.die()
+            mapWindow.die() // closes the map window to prevent movement
         }
     }
 
@@ -265,7 +272,7 @@ class MainWindow(val app: App) {
 }
 
 
-//AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
+//AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA just a barrier AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
 
 /**
  * Map window is a child dialog and shows the map
@@ -323,6 +330,9 @@ class MapWindow(private val owner: MainWindow, private val app: App) {
         dialog.pack()
     }
 
+    /**
+     * these actions check if a panel has been clicked
+     */
     private fun setupActions() {
         breakerPanel.addMouseListener(object : MouseAdapter() {
             override fun mousePressed(e: MouseEvent) {
@@ -401,7 +411,7 @@ class MapWindow(private val owner: MainWindow, private val app: App) {
     }
 }
 
-//AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
+//AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA just another barrier AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
 
 /**
  * Text window is a child dialog and shows basic clues
