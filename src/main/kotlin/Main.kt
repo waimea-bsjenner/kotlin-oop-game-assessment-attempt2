@@ -1,5 +1,4 @@
 import com.formdev.flatlaf.themes.FlatMacDarkLaf
-import java.awt.Color
 import java.awt.Font
 import java.awt.Point
 import java.awt.event.MouseAdapter
@@ -54,21 +53,23 @@ class App {
     private val inventory = mutableListOf<Item>()
 
     init {
-        val keyBoardBackgrounds = listOf(Background("images/keyBoardWindow.png"))
+        val keyBoardBackgrounds = listOf(Background("images/keyBoardWindow.png", 363,312,51,72),Background("images/keyBoardWindow2.png"))
         val startBackgrounds = listOf(Background("images/startWindow.png"))
-        val breakerBackgrounds = listOf(Background("images/breakerWindow.png",240,120,240,240),Background("images/breakerWindow2.png",240,120,240,240),Background("images/breakerWindow3.png"))
-        val officeBackgrounds = listOf(Background("images/officeWindow.png"),Background("images/officeWindow2.png",300,240,120,240),Background("images/officeWindow3.png"))
+        val breakerBackgrounds = listOf(Background("images/breakerWindow.png",228,83,268,314),Background("images/breakerWindow2.png",407,148,38,193),Background("images/breakerWindow3.png"))
+        val officeBackgrounds = listOf(Background("images/officeWindow.png"),Background("images/officeWindow2.png",345,199,52,198),Background("images/officeWindow3.png"))
         val empty1Backgrounds = listOf(Background("images/empty1Window.png"))
         val supplyClosetBackgrounds = listOf(Background("images/supplyClosetWindow.png",180,120,360,360),Background("images/supplyClosetWindow2.png",180,120,360,360),Background("images/supplyClosetWindow3.png"))
         val loseScreenBackgrounds = listOf(Background("images/loseWindow.png"))
+        val chainsawBackgrounds = listOf(Background("images/chainsawWindow.png",295,205,98,99), Background("images/chainsawWindow2.png"))
 
-        val keyBoard = Location("keyBoard", keyBoardBackgrounds, "images/keyBoardButton.png", Point(10,10))
-        val start = Location("Start", startBackgrounds, "images/startButton.png", Point(150, 150))
-        val breaker = Location("Breaker", breakerBackgrounds, "images/breakerButton.png", Point(75, 75))
-        val office = Location("Office", officeBackgrounds,"images/officeButton.png",  Point(50, 286))
-        val empty1 = Location("Empty1", empty1Backgrounds, "images/empty1Button.png", Point(75, 225))
-        val supplyCloset = Location("Supply Closet", supplyClosetBackgrounds, "images/supplyClosetButton.png", Point(225, 75))
+        val keyBoard = Location("keyBoard", keyBoardBackgrounds, "images/keyBoardButton.png", Point(141,113))
+        val start = Location("Start", startBackgrounds, "images/startButton.png", Point(237, 282))
+        val breaker = Location("Breaker", breakerBackgrounds, "images/breakerButton.png", Point(245, 37))
+        val office = Location("Office", officeBackgrounds,"images/officeButton.png",  Point(44, 276))
+        val empty1 = Location("Empty1", empty1Backgrounds, "images/empty1Button.png", Point(122, 205))
+        val supplyCloset = Location("Supply Closet", supplyClosetBackgrounds, "images/supplyClosetButton.png", Point(38, 35))
         val loseScreen = Location("Lose Screen", loseScreenBackgrounds, "images/startButton.png", Point(150, 150))
+        val chainsaw = Location("Chainsaw", chainsawBackgrounds, "images/chainsawButton.png", Point(304, 179))
 
         locationList.add(start)
         locationList.add(breaker)
@@ -77,6 +78,7 @@ class App {
         locationList.add(office)
         locationList.add(loseScreen)
         locationList.add(keyBoard)
+        locationList.add(chainsaw)
     }
 
     var currentLocation: Location = locationList[0]
@@ -85,6 +87,7 @@ class App {
 
     private val wireCutters = Item("Wire Cutters")
     private val supplyKey = Item("Supply Closet Key")
+    private val chainsaw = Item("Chainsaw")
 
     /**
      * nextBackground function changes the background depending on how the player interacts with it
@@ -114,13 +117,21 @@ class App {
         if (currentLocation == locationList[1] && currentLocation.currentBackgroundIndex == 0) {
             currentLocation.currentBackgroundIndex++
         }
-        if (currentLocation == locationList[4] && currentLocation.currentBackgroundIndex == 1) {
+        if (currentLocation == locationList[4] && currentLocation.currentBackgroundIndex == 1 && !inventory.contains(chainsaw)) {
+            innerMonologue = "I dont wanna touch this goody two shoes, I need a murder weapon..."
+        }
+        if (currentLocation == locationList[4] && currentLocation.currentBackgroundIndex == 1 && inventory.contains(chainsaw)) {
             currentLocation.currentBackgroundIndex++
         }
         if (currentLocation == locationList[6] && currentLocation.currentBackgroundIndex == 0) {
             currentLocation.currentBackgroundIndex++
             inventory.add(supplyKey)
             innerMonologue = "A lone key... I wonder which supply closet this thing goes into"
+        }
+        if (currentLocation == locationList[7] && currentLocation.currentBackgroundIndex == 0) {
+            currentLocation.currentBackgroundIndex++
+            inventory.add(chainsaw)
+            innerMonologue = "I could really do some human damage with this..."
         }
     }
 }
@@ -304,6 +315,8 @@ class MapWindow(private val owner: MainWindow, private val app: App) {
     private val supplyClosetIcon = ImageIcon(ClassLoader.getSystemResource(app.locationList[3].button)).scaled(72, 48)
     private val officeIcon = ImageIcon(ClassLoader.getSystemResource(app.locationList[4].button)).scaled(72, 48)
     private val keyBoardIcon = ImageIcon(ClassLoader.getSystemResource(app.locationList[6].button)).scaled(72,48)
+    private val startIcon = ImageIcon(ClassLoader.getSystemResource(app.locationList[0].button)).scaled(72,48)
+    private val chainsawIcon = ImageIcon(ClassLoader.getSystemResource(app.locationList[7].button)).scaled(72,48)
 
     private val mapPanel = JLabel(map)
     private val breakerPanel = JLabel(breakerIcon)
@@ -312,9 +325,11 @@ class MapWindow(private val owner: MainWindow, private val app: App) {
     private val supplyClosetPanel = JLabel(supplyClosetIcon)
     private val player = JLabel(playerIcon)
     private val keyBoardPanel = JLabel(keyBoardIcon)
+    private val startPanel= JLabel(startIcon)
+    private val chainsawPanel = JLabel(chainsawIcon)
+
     init {
         setupLayout()
-        setupStyles()
         setupActions()
         setupWindow()
         updateUI()
@@ -324,13 +339,15 @@ class MapWindow(private val owner: MainWindow, private val app: App) {
         panel.preferredSize = java.awt.Dimension(360, 360)
 
         mapPanel.setBounds(0,0,360,360)
-        breakerPanel.setBounds(10,10, 108, 72)
-        officePanel.setBounds(190, 190, 108, 72)
-        empty1Panel.setBounds(10, 190,  108, 72)
-        supplyClosetPanel.setBounds(190, 10, 108, 72)
-        keyBoardPanel.setBounds(252,288,108,72)
+        breakerPanel.setBounds(211,21, 108, 72)
+        officePanel.setBounds(10, 260, 108, 72)
+        empty1Panel.setBounds(88, 189,  108, 72)
+        supplyClosetPanel.setBounds(4, 19, 108, 72)
+        keyBoardPanel.setBounds(107,97,108,72)
+        startPanel.setBounds(203,266,108,72)
+        chainsawPanel.setBounds(270, 163, 108, 72)
 
-        player.setBounds(160, 160, 40, 40)
+        player.setBounds(238, 283, 40, 40)
 
 
         panel.add(player)
@@ -339,10 +356,9 @@ class MapWindow(private val owner: MainWindow, private val app: App) {
         panel.add(supplyClosetPanel)
         panel.add(breakerPanel)
         panel.add(keyBoardPanel)
+        panel.add(startPanel)
+        panel.add(chainsawPanel)
         panel.add(mapPanel, JLayeredPane.DEFAULT_LAYER-1)
-    }
-
-    private fun setupStyles() {
     }
 
     private fun setupWindow() {
@@ -385,34 +401,71 @@ class MapWindow(private val owner: MainWindow, private val app: App) {
                 handleKeyBoardClick()
             }
         })
+
+        startPanel.addMouseListener(object : MouseAdapter() {
+            override fun mousePressed(e: MouseEvent) {
+                handleStartClick()
+            }
+        })
+
+        chainsawPanel.addMouseListener(object : MouseAdapter() {
+            override fun mousePressed(e: MouseEvent) {
+                handleChainsawClick()
+            }
+        })
     }
 
     /**
-     * the next 4 functions run when their respective panels are clicked, and change your location
+     * the next 7 functions run when their respective panels are clicked, and change your location
+     * they should only work if the current location is adjacent via the path on the map
      */
     private fun handleBreakerClick() {
-        app.currentLocation = app.locationList[1]
-        owner.updateUI()
+        if (app.currentLocation == app.locationList[7] || app.currentLocation == app.locationList[3]) {
+            app.currentLocation = app.locationList[1]
+            owner.updateUI()
+        }
     }
 
     private fun handleEmpty1Click() {
-        app.currentLocation = app.locationList[2]
-        owner.updateUI()
+        if (app.currentLocation == app.locationList[3] || app.currentLocation == app.locationList[0] || app.currentLocation == app.locationList[2] || app.currentLocation == app.locationList[4] || app.currentLocation == app.locationList[5] || app.currentLocation == app.locationList[6]) {
+            app.currentLocation = app.locationList[2]
+            owner.updateUI()
+        }
     }
 
     private fun handleSupplyClosetClick() {
-        app.currentLocation = app.locationList[3]
-        owner.updateUI()
+        if (app.currentLocation == app.locationList[2] || app.currentLocation == app.locationList[1]) {
+            app.currentLocation = app.locationList[3]
+            owner.updateUI()
+        }
     }
 
     private fun handleOfficeClick() {
-        app.currentLocation = app.locationList[4]
-        owner.updateUI()
+        if (app.currentLocation == app.locationList[2]) {
+            app.currentLocation = app.locationList[4]
+            owner.updateUI()
+        }
     }
 
     private fun handleKeyBoardClick() {
-        app.currentLocation = app.locationList[6]
-        owner.updateUI()
+        if (app.currentLocation == app.locationList[7] || app.currentLocation == app.locationList[2]) {
+            app.currentLocation = app.locationList[6]
+            owner.updateUI()
+        }
+    }
+
+    private fun handleStartClick() {
+        if (app.currentLocation == app.locationList[2]) {
+            app.currentLocation = app.locationList[0]
+            owner.updateUI()
+        }
+    }
+
+    private fun handleChainsawClick() {
+        if (app.currentLocation == app.locationList[1] || app.currentLocation == app.locationList[6]) {
+            app.currentLocation = app.locationList[7]
+            owner.updateUI()
+        }
     }
 
     /**
@@ -440,7 +493,6 @@ class MapWindow(private val owner: MainWindow, private val app: App) {
      */
     fun die() {
         panel.isVisible = false
-        owner.app.innerMonologue = "Dang it! We couldn't kill them!"
     }
 }
 
