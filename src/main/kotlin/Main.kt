@@ -472,7 +472,7 @@ class MapWindow(private val owner: MainWindow, private val app: App) {
      * updates the window to move the player to its respective location panel
      */
     fun updateUI() {
-        player.setLocation(app.currentLocation.mapLocation.x, app.currentLocation.mapLocation.y)// Use app properties to display state
+        player.setLocation(app.currentLocation.mapLocation.x, app.currentLocation.mapLocation.y) // Use app properties to display state
     }
 
     /**
