@@ -93,41 +93,60 @@ class App {
      * nextBackground function changes the background depending on how the player interacts with it
      */
     fun nextBackground() {
+        // pick up wirecutters
         if (currentLocation == locationList[3] && currentLocation.currentBackgroundIndex == 1) {
             inventory.add(wireCutters)
             innerMonologue = "Hey look, something sharp and snippy!"
             currentLocation.currentBackgroundIndex++
         }
+
+        // use wirecutters
         if (currentLocation == locationList[1] && currentLocation.currentBackgroundIndex == 1 && inventory.contains(wireCutters)) {
             inventory.remove(wireCutters)
             innerMonologue = "Wow these wire cutters are flimsy. Broke after one snip."
             currentLocation.currentBackgroundIndex++
             locationList[4].currentBackgroundIndex++
         }
+
+        // attempt to cut wire without cutters
         if (currentLocation == locationList[1] && currentLocation.currentBackgroundIndex == 1 && !inventory.contains(wireCutters)) {
             innerMonologue = "I need something sharp and snippy to cut this singular blue wire."
         }
+
+        // open supply closet
         if (currentLocation == locationList[3] && currentLocation.currentBackgroundIndex == 0 && inventory.contains(supplyKey)) {
             currentLocation.currentBackgroundIndex++
             innerMonologue = "So this is the supply closet this thing goes into"
         }
+
+        // attempts to open supply closet without key
         if (currentLocation == locationList[3] && currentLocation.currentBackgroundIndex == 0 && !inventory.contains(supplyKey)) {
             innerMonologue = "I think i need a generic supply closet key"
         }
+
+        // open breaker
         if (currentLocation == locationList[1] && currentLocation.currentBackgroundIndex == 0) {
             currentLocation.currentBackgroundIndex++
         }
+
+        // attempt to kill security officer without chainsaw
         if (currentLocation == locationList[4] && currentLocation.currentBackgroundIndex == 1 && !inventory.contains(chainsaw)) {
             innerMonologue = "I dont wanna touch this goody two shoes, I need a murder weapon..."
         }
+
+        // kill security officer
         if (currentLocation == locationList[4] && currentLocation.currentBackgroundIndex == 1 && inventory.contains(chainsaw)) {
             currentLocation.currentBackgroundIndex++
         }
+
+        // pick up key on the board
         if (currentLocation == locationList[6] && currentLocation.currentBackgroundIndex == 0) {
             currentLocation.currentBackgroundIndex++
             inventory.add(supplyKey)
             innerMonologue = "A lone key... I wonder which supply closet this thing goes into"
         }
+
+        // pick up chainsaw
         if (currentLocation == locationList[7] && currentLocation.currentBackgroundIndex == 0) {
             currentLocation.currentBackgroundIndex++
             inventory.add(chainsaw)
@@ -227,7 +246,9 @@ class MainWindow(val app: App) {
      * sets up the actions
      */
     private fun setupActions() {
+
         // This checks to see where the mouse is clicking
+
         imageLabel.addMouseListener(object : MouseAdapter() {
             override fun mouseClicked(e: MouseEvent) {
                 handleBackgroundClick(e.x,e.y)
@@ -244,10 +265,10 @@ class MainWindow(val app: App) {
     private fun handleTimerEnd() {
         countDown--
         updateUI()
-        if (countDown == 0) {
+        if (countDown == 0) { // if game is lost
             imageLabel.icon = ImageIcon(ClassLoader.getSystemResource("images/loseScreen.png"))
             timer.stop()
-            mapWindow.die() // closes the map window to prevent movement
+            mapWindow.close() // closes the map window to prevent movement
         }
     }
 
@@ -272,14 +293,14 @@ class MainWindow(val app: App) {
      * updates the UI whenever an input is made, or the countdown goes down
      */
     fun updateUI() {
-        val currentLocation = app.currentLocation
-        val currentBackground = currentLocation.backgroundList[currentLocation.currentBackgroundIndex]
-        val helpme = ClassLoader.getSystemResource(currentBackground.image)
-        imageLabel.icon = ImageIcon(helpme)
+        val currentLocation = app.currentLocation // get the new current location after moving
+        val currentBackground = currentLocation.backgroundList[currentLocation.currentBackgroundIndex] // get the specific background that the player has progressed to in that location
+        val newBackground = ClassLoader.getSystemResource(currentBackground.image) // turn it into an image
+        imageLabel.icon = ImageIcon(newBackground)
 
         countDownLabel.text = "$countDown"
 
-        if (app.currentLocation == app.locationList[4] && app.currentLocation.currentBackgroundIndex == 2) {
+        if (app.currentLocation == app.locationList[4] && app.currentLocation.currentBackgroundIndex == 2) { // if game is won
             timer.stop()
         }
 
@@ -335,6 +356,9 @@ class MapWindow(private val owner: MainWindow, private val app: App) {
         updateUI()
     }
 
+    /**
+     * setup the layout, putting all the locations on the map
+     */
     private fun setupLayout() {
         panel.preferredSize = java.awt.Dimension(360, 360)
 
@@ -369,7 +393,7 @@ class MapWindow(private val owner: MainWindow, private val app: App) {
     }
 
     /**
-     * these actions check if a panel has been clicked
+     * these actions check if a panel/location has been clicked
      */
     private fun setupActions() {
         breakerPanel.addMouseListener(object : MouseAdapter() {
@@ -491,7 +515,7 @@ class MapWindow(private val owner: MainWindow, private val app: App) {
     /**
      * closes the window to prevent movement when game is lost
      */
-    fun die() {
+    fun close() {
         panel.isVisible = false
     }
 }
@@ -508,7 +532,7 @@ class MapWindow(private val owner: MainWindow, private val app: App) {
 class TextWindow(private val owner: MainWindow, private val app: App) {
     private val panel = JPanel().apply { layout = null }
     private val dialog = JDialog(owner.frame, "Your Inner Monologue", false)
-    private var innerMonologue = JLabel("<html><center>${app.innerMonologue}")
+    private var innerMonologue = JLabel("<html><center><wrap>${app.innerMonologue}")
 
     private fun setupLayout() {
         panel.preferredSize = java.awt.Dimension(360, 110)
