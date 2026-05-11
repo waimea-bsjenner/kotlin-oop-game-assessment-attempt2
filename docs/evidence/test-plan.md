@@ -80,32 +80,44 @@ it should start off closed, and when i go cut the wire it should be open.
 
 ---
 
-## Example Test Name
+## Moving to invalid location
 
-Example test description. Example test description. Example test description. Example test description. Example test description. Example test description.
-
-### Test Data To Use
-
-Details of test data and reasons for selection. Details of test data and reasons for selection. Details of test data and reasons for selection.
-
-### Expected Test Result
-
-Statement detailing what should happen. Statement detailing what should happen. Statement detailing what should happen. Statement detailing what should happen.
-
----
-
-## Example Test Name
-
-Example test description. Example test description. Example test description. Example test description. Example test description. Example test description.
+the project was completely finished from this point on. Now in the map you should only be able to head to specific locations adjacent to the current one.
 
 ### Test Data To Use
 
-Details of test data and reasons for selection. Details of test data and reasons for selection. Details of test data and reasons for selection.
+I'll move around the new map, and attempt to move to different locations, some adjacent and some not. I should only be able to move to adjacent locations
 
 ### Expected Test Result
 
-Statement detailing what should happen. Statement detailing what should happen. Statement detailing what should happen. Statement detailing what should happen.
+It should only let me move between locations connected by the path.
 
 ---
 
+## Lose screen
 
+the game is lost if the timer runs out. This test is to make sure it happens correctly
+
+### Test Data To Use
+
+I'll let the timer run out and see what happens
+
+### Expected Test Result
+
+should get moved to the lose location with the one background of the lose screen and the map should disappear so the player cant move off of it and has to restart and the timer should stop counting down and not go into negatives
+
+---
+
+## Winning
+
+The game is won if you manage to gruesomely splay the security officer over his office.
+
+### Test data to use
+
+I'll end the game via winning.
+
+### extpected test result
+
+the timer should stop and show the win screen
+
+---
